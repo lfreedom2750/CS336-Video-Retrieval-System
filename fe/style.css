@@ -1,0 +1,626 @@
+/* ===== RESET & BASE ===== */
+* {
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: #f8fafc; /* 🌞 Nền sáng tổng thể */
+  color: #222;
+}
+
+/* ===== NAVIGATION BAR ===== */
+.navbar {
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+  color: #fff;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+.navbar h1 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ===== MAIN CONTAINER ===== */
+.container {
+  display: flex;
+  gap: 20px;
+  padding: 20px 24px;
+  margin-top: 20px;
+  height: calc(100vh - 84px);
+}
+
+/* ===== LEFT PANEL ===== */
+.left-panel {
+  width: 27%;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  overflow-y: auto;
+}
+.left-panel h2 {
+  font-size: 18px;
+  margin-top: 0;
+  color: #1d3557;
+  border-left: 4px solid #457b9d;
+  padding-left: 8px;
+}
+
+form label {
+  font-weight: 600;
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+/* ===== INPUT & TEXTAREA ===== */
+input[type="text"],
+textarea,
+input[type="file"],
+.dropdown-selected {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  background-color: #fff;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: #457b9d;
+  box-shadow: 0 0 0 2px rgba(69, 123, 157, 0.2);
+}
+
+/* ===== DROPDOWN (Object Filters) ===== */
+.dropdown {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+}
+.dropdown-selected {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.dropdown-selected::after {
+  content: "▾";
+  font-size: 14px;
+  color: #444;
+  margin-left: 8px;
+}
+.dropdown-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  max-height: 160px;
+  overflow-y: auto;
+  margin-top: 5px;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+.dropdown-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.dropdown-list label:hover {
+  background: #f1f5ff;
+}
+.dropdown.open .dropdown-list {
+  display: block;
+}
+
+/* ===== FILE UPLOAD + CLEAR BUTTON ===== */
+.file-upload-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.file-upload-wrapper input[type="file"] {
+  flex: 1;
+}
+.file-upload-wrapper button.clear-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+}
+.file-upload-wrapper button.clear-btn:hover {
+  color: #e63946;
+}
+
+/* ===== SEARCH BUTTON ===== */
+form button {
+  margin-top: 18px;
+  background: linear-gradient(135deg, #457b9d, #1d3557);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+form button:hover {
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+}
+
+/* ===== RIGHT PANEL ===== */
+.right-panel {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== QA EXPORT ===== */
+.qa-export {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+  background: #f9fafc;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.qa-export input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+.qa-export button {
+  background: linear-gradient(135deg, #06d6a0, #118ab2);
+  border-radius: 10px;
+  padding: 10px 16px;
+  border: none;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+.qa-export button:hover {
+  background: linear-gradient(135deg, #118ab2, #06d6a0);
+}
+
+/* ===== GRID ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* ✅ đúng 5 cột mỗi hàng */
+  gap: 14px;
+  justify-items: center; /* căn giữa ảnh trong ô */
+}
+.result-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.result-card img {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+.result-card p {
+  font-weight: 600;
+  margin: 4px 0;
+  font-size: 14px;
+  color: #222;
+}
+.result-card small {
+  color: #666;
+  font-size: 12px;
+}
+
+/* ======================
+   🧩 Modal Context Viewer
+   ====================== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.modal-content {
+  background: #ffffff;
+  color: #222;
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  width: 90%;
+  max-width: 1000px;
+  max-height: 85vh;             /* ✅ giới hạn chiều cao */
+  overflow-y: auto;             /* ✅ bật scroll dọc */
+  padding: 24px;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.close-btn:hover { color: #000; }
+
+/* ===== Submit Section ===== */
+.submit-section {
+  margin-top: 8px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f9fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.submit-section h4 {
+  color: #1d3557;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.submit-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.submit-inputs input {
+  flex: 1 1 140px;
+  min-width: 120px;
+  padding: 8px;
+  font-size: 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #222;
+}
+
+.submit-inputs input:focus {
+  outline: none;
+  border-color: #457b9d;
+  box-shadow: 0 0 0 2px rgba(69, 123, 157, 0.15);
+}
+
+.submit-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.submit-buttons button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #457b9d, #1d3557);
+  transition: background 0.25s ease;
+}
+
+.submit-buttons button:hover {
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+}
+
+/* ===== Context Grid ===== */
+.context-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, auto);
+  gap: 10px;
+}
+
+.context-cell {
+  background: #f1f5ff;
+  border-radius: 8px;
+  padding: 4px;
+  transition: transform 0.2s ease;
+}
+
+.context-cell img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.context-cell.current {
+  border: 3px solid #1d3557;
+  transform: scale(1.05);
+}
+
+
+
+/* ===== CHATBOT FLOATING BUTTON ===== */
+#chatbot-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, #457b9d, #1d3557);
+  color: white;
+  font-size: 22px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  z-index: 999;
+  transition: all 0.2s ease;
+}
+#chatbot-button:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+}
+
+/* ===== CHATBOT WINDOW ===== */
+#chatbot-window {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: 320px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1000;
+  font-family: "Inter", sans-serif;
+}
+
+.chatbot-header {
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+  color: #fff;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+.chatbot-header button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.chatbot-body {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bot-message,
+.user-message {
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 80%;
+}
+.bot-message {
+  background: #f1f5ff;
+  align-self: flex-start;
+}
+.user-message {
+  background: #d1f7c4;
+  align-self: flex-end;
+}
+
+.chatbot-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+.chatbot-input input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  font-size: 14px;
+  outline: none;
+}
+.chatbot-input button {
+  background: #457b9d;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.chatbot-input button:hover {
+  background: #1d3557;
+}
+
+#chatbot-window.show {
+  display: flex;
+}
+
+.submit-section {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #ccc;
+  background: #f9fafc;
+  border-radius: 8px;
+}
+
+.submit-section h4 {
+  color: #1d3557;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.submit-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.submit-inputs input {
+  flex: 1 1 140px;
+  min-width: 120px;
+  padding: 8px;
+  font-size: 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #222;
+  transition: all 0.2s ease;
+}
+
+.submit-inputs input:focus {
+  outline: none;
+  border-color: #457b9d;
+  box-shadow: 0 0 0 2px rgba(69, 123, 157, 0.2);
+  background: #fff;
+}
+
+.submit-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.submit-buttons button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #457b9d, #1d3557);
+  transition: background 0.25s ease;
+}
+
+.submit-buttons button:hover {
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+}
+
+/* Light-theme modal harmonization */
+.modal-content {
+  background: #ffffff;
+  color: #222;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+.close-btn {
+  color: #666;
+}
+.close-btn:hover {
+  color: #000;
+}
+.context-cell {
+  background: #f1f5ff;
+}
+.context-cell.current {
+  border: 3px solid #1d3557;
+  transform: scale(1.05);
+}
+
+/* ===========================
+   🖼️ DRAG & DROP UPLOAD ZONE
+   =========================== */
+.upload-wrapper {
+  position: relative;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.upload-wrapper.drag-over {
+  border-color: #457b9d;
+  background: #eaf4ff;
+  box-shadow: 0 0 10px rgba(69, 123, 157, 0.15);
+}
+
+.upload-wrapper p.drop-hint {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.upload-wrapper img.preview {
+  max-width: 120px;
+  margin-top: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.upload-wrapper .remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255,255,255,0.8);
+  border: none;
+  color: #e63946;
+  font-size: 18px;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: none;
+}
+.upload-wrapper:hover .remove-btn {
+  display: block;
+}
+.upload-wrapper .remove-btn:hover {
+  background: #e63946;
+  color: #fff;
+}
