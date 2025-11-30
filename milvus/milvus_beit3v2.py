@@ -1,6 +1,6 @@
 import sys, os, re, time, concurrent.futures
 from functools import lru_cache
-sys.path.append(r"D:\AIC2025\beit3\unilm\beit3")
+sys.path.append(r"D:\CS336\beit3\unilm\beit3")
 
 import numpy as np
 import torch
@@ -20,18 +20,18 @@ from object_filter import filter_results_by_objects
 from torch.cuda.amp import autocast
 
 
-MILVUS_URI = "https://in03-e1ea33f293985d0.serverless.aws-eu-central-1.cloud.zilliz.com"
-MILVUS_TOKEN = "97d41ad10f6aaa43a375383eafcd638e56761eea7c1fca007a78fa03e762765b6c0263394b01d5d6b376e23d466a3a6a3e976385"
+MILVUS_URI = "https://in03-72ca0c57717b311.serverless.aws-eu-central-1.cloud.zilliz.com"
+MILVUS_TOKEN = "6e46340b0b47b937701acaf37c4a867542b9140286350efb9459919d0e6da1caa4d0b96db715e1b6a6fc003e1a1520ad9c18c21c"
 COLLECTION_NAME = "video_embeddings_beit3"
 
 MODEL_WEIGHT_PATH = r"D:\AIC2025\beit3\beit3_base_patch16_384_coco_retrieval.pth"
 TOKENIZER_PATH = r"D:\AIC2025\beit3\beit3.spm"
 
-MONGO_URI = "mongodb+srv://nguyentheluan27052005vl_db_user:inseclabhelio123@cluster0.rnsh7kk.mongodb.net/?retryWrites=true&w=majority"
+MONGO_URI = "mongodb+srv://nguyentheluan27052005vl_db_user:inseclabhelio123@cluster0.jddn1ha.mongodb.net/?retryWrites=true&w=majority"
 DB_NAME = "obj-detection"
 COLLECTION_NAME_OBJ = "object-detection-results"
 
-BASE_DIR = r"D:\AIC2025\keyframes"
+BASE_DIR = r"D:\CS336\keyframes"
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
@@ -175,12 +175,34 @@ def search_milvus(query_vec, top_k=100):
 def enrich_results(hits):
     if not hits:
         return []
-    df = pd.DataFrame([{"frame_id": h["row"]["frame_id"], "path": h["row"]["path"], "similarity": h["score"]} for h in hits])
+
+    df = pd.DataFrame([
+        {
+            "frame_id": h["row"]["frame_id"],
+            "path": h["row"]["path"],
+            "similarity": h["score"]
+        }
+        for h in hits
+    ])
+
+    # Chuẩn hóa path trả về từ Milvus
     df["file_path"] = df["path"].astype(str).str.replace("\\", "/", regex=False)
-    df["prefix"] = df["file_path"].str.extract(r"^([A-Z0-9]+)_")
-    df["abs_path"] = BASE_DIR + "/Videos_" + df["prefix"].fillna("UNKNOWN") + "/" + df["file_path"]
+
+    # Tách ra video_id (vd: L15_V018) và filename (vd: 1234.jpg)
+    df["video_id"] = df["file_path"].apply(lambda p: p.split("/")[0])
+    df["filename"] = df["file_path"].apply(lambda p: p.split("/")[-1])
+
+    # Build đường dẫn Windows đúng:
+    df["abs_path"] = df.apply(
+        lambda r: os.path.join(BASE_DIR, r["video_id"], r["filename"]),
+        axis=1
+    )
+
+    # Lưu điểm
     df["combined_score"] = df["similarity"]
+
     return df.to_dict(orient="records")
+
 
 
 def combine_results(milvus_results, ocr_results, asr_results=None, weights=(0.7, 0.15, 0.15)):

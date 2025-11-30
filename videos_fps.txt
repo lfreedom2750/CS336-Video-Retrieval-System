@@ -1,0 +1,31 @@
+# Core ML
+numpy
+torch
+torchvision
+Pillow
+pandas
+transformers
+deep-translator
+nltk
+
+# Backend
+fastapi
+uvicorn
+python-multipart
+requests
+
+# Search / Vector DB
+pymilvus==2.4.4
+faiss-cpu
+
+# Elastic Cloud
+elasticsearch==8.14.0
+
+# Databases
+pymongo
+
+# Google Gemini
+google-genai
+
+# CORS support
+starlette

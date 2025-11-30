@@ -172,7 +172,18 @@ function renderResults(results) {
     });
 
     // 🎯 Click mở context viewer
-    card.addEventListener("click", () => openContext(r.frame_id));
+    card.addEventListener("click", () => {
+    const fp = r.path || r.file_path || r.abs_path;
+    // fp = "L15_V018/12234.jpg"
+    if (!fp) return;
+
+    const parts = fp.split("/");
+    const videoId = parts[0];           // L15_V018
+    const frameNum = parts[1].replace(".jpg","");  // 12234
+
+    const frameId = `${videoId}_${frameNum}`;
+    openContext(frameId);
+  });
 
     resultsGrid.appendChild(card);
   });
