@@ -1,5 +1,5 @@
 import sys, os, io, re, numpy as np
-sys.path.append(r"D:\AIC2025")
+sys.path.append(r"D:\CS336")
 
 
 from fastapi import FastAPI, Form, File, UploadFile
@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
-from milvus import milvus_beit3v2 as bf
+from milvus import milvus_beit3_cpu as bf
 from gemini_api import query_gemini
 from ocr_csv.ocr_search import search_ocr
 from asr_csv.asr_search import search_asr
@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-KEYFRAME_ROOT = r"D:\AIC2025\keyframes"
+KEYFRAME_ROOT = r"D:\CS336\keyframes"
 BASE_URL = "http://127.0.0.1:7860/frames"
 
 if os.path.exists(KEYFRAME_ROOT):
@@ -51,29 +51,35 @@ def make_json_safe(obj):
         return obj
 
 
+# KHÔNG BAO GIỜ thêm Videos_Kxx hoặc Videos_Lxx
+# path trả về từ Milvus luôn dạng L15_V018/1234.jpg
+
 def convert_local_to_url(path: str) -> str:
     try:
-        path = str(path).strip().replace("\\", "/")
         if not path:
             return None
 
-        # Tự động thêm prefix "Videos_XX" nếu thiếu
-        m = re.match(r"^([KL]\d+)_", path, re.IGNORECASE)
-        if m and not path.lower().startswith("videos_"):
-            prefix = m.group(1).upper()
-            path = f"Videos_{prefix}/{path}"
+        # chuẩn hóa
+        p = str(path).replace("\\", "/").strip()
 
-        abs_path = os.path.normpath(os.path.join(KEYFRAME_ROOT, path))
-        rel = os.path.relpath(abs_path, KEYFRAME_ROOT).replace("\\", "/")
-        url = f"{BASE_URL}/{rel}"
+        # nếu là absolute path → rút về relative
+        if ":" in p:
+            rel = os.path.relpath(p, KEYFRAME_ROOT).replace("\\", "/")
+        else:
+            rel = p
+
+        # Build absolute
+        abs_path = os.path.join(KEYFRAME_ROOT, rel)
+        abs_path = os.path.normpath(abs_path)
 
         if not os.path.exists(abs_path):
-            print(f"[WARN] File not found: {abs_path}")
+            print("[WARN] not exists:", abs_path)
             return None
 
-        return url
+        return f"{BASE_URL}/{rel}"
+
     except Exception as e:
-        print(f"[ERROR] convert_local_to_url failed: {e}")
+        print("convert_local_to_url ERROR:", e)
         return None
 
 
@@ -174,48 +180,50 @@ async def chatbot_api(prompt: str = Form(...)):
 @app.get("/api/context/{frame_id}")
 async def api_context(frame_id: str):
     try:
-        m = re.match(r"([A-Z]\d+_V\d+)_(\d+)", frame_id, re.IGNORECASE)
+        print("RECEIVED FRAME_ID:", frame_id)
+
+        # CHỈ NHẬN Lxx_Vxxx
+        m = re.match(r"(L\d+_V\d+)_(\d+)", frame_id, re.IGNORECASE)
         if not m:
             return JSONResponse({"status": "error", "message": "Invalid frame_id"}, status_code=400)
 
         video_id, frame_num = m.group(1), int(m.group(2))
-        prefix = video_id.split("_")[0].upper()
-        base_dir = os.path.join(KEYFRAME_ROOT, f"Videos_{prefix}", video_id)
 
-        # 🔹 Lấy toàn bộ frame hiện có
-        all_frames = sorted([
-            f for f in os.listdir(base_dir)
-            if f.lower().endswith(".jpg") and re.match(r"^\d+\.jpg$", f)
-        ], key=lambda x: int(x.split(".")[0]))
+        # KHÔNG THÊM Videos_Lxx NỮA
+        base_dir = os.path.join(KEYFRAME_ROOT, video_id)
+
+        # load frames thật
+        all_frames = sorted(
+            [f for f in os.listdir(base_dir) if re.match(r"^\d+\.jpg$", f)],
+            key=lambda x: int(x.split(".")[0])
+        )
 
         if not all_frames:
             return JSONResponse({"status": "error", "message": "No frames found"}, status_code=404)
 
-        # 🔹 Tìm vị trí của frame hiện tại
-        idx = None
-        for i, f in enumerate(all_frames):
-            if f"{frame_num}.jpg" == f:
-                idx = i
-                break
-        if idx is None:
+        # vị trí frame
+        try:
+            idx = all_frames.index(f"{frame_num}.jpg")
+        except ValueError:
             return JSONResponse({"status": "error", "message": "Frame not found"}, status_code=404)
 
-        # 🔹 Lấy 12 frame trước và 12 frame sau (theo danh sách thật)
-        neighbors_files = all_frames[max(0, idx-12): idx+13]
+        # lấy hàng xóm
+        neighbors_files = all_frames[max(0, idx - 12): idx + 13]
 
         neighbors = []
         for fname in neighbors_files:
             fnum = int(fname.split(".")[0])
-            rel_path = f"Videos_{prefix}/{video_id}/{fname}"
             neighbors.append({
                 "frame_id": f"{video_id}_{fnum:05d}",
-                "path": rel_path
+                "path": f"{video_id}/{fname}"
             })
 
         return JSONResponse({"status": "ok", "neighbors": neighbors})
+
     except Exception as e:
         print("❌ Error in /api/context:", e)
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
 
 
 

@@ -6,10 +6,10 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI(title="DRES Submission API")
 
-DRES_BASE = "https://eventretrieval.oj.io.vn/api/v2"
-EVALUATION_ID = "06236d7d-368e-44ac-a388-c955cb374a7d"
-SESSION_ID = "BS9RkFlS2DUbluunInRIf9LUJTKcdrsA"
-FPS_CSV_PATH = r"D:\AIC2025\videos_fps.csv"
+DRES_BASE = "http://192.168.28.151:5000/api/v2"
+EVALUATION_ID = "1e681cc2-052b-41a2-9897-2ff4194fc77a"
+SESSION_ID = "lks9UycldoCpI-o4P3ei6JI9-222xT0i"
+FPS_CSV_PATH = r"D:\CS336\videos_fps.csv"
 
 TEST_MODE = False
 
