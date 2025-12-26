@@ -1,6 +1,8 @@
 import sys, os, io, re, numpy as np
-sys.path.append(r"D:\CS336")
+current_folder = os.path.dirname(os.path.abspath(__file__))
 
+if current_folder not in sys.path:
+    sys.path.append(current_folder)
 
 from fastapi import FastAPI, Form, File, UploadFile
 from fastapi.responses import JSONResponse
@@ -9,10 +11,11 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
 from milvus import milvus_beit3_cpu as bf
-from gemini_api import query_gemini
+from gemini_services import query_gemini
 from ocr_csv.ocr_search import search_ocr
 from asr_csv.asr_search import search_asr
 from dres import app as dres_app
+
 # ==================== APP CONFIG ====================
 app = FastAPI(title="AIC2025 Video Search API")
 app.mount("/dres", dres_app)
@@ -24,15 +27,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-KEYFRAME_ROOT = r"D:\CS336\keyframes"
+ 
+KEYFRAME_ROOT = r"/home/ir/data/keyframes"
 BASE_URL = "http://127.0.0.1:7860/frames"
 
 if os.path.exists(KEYFRAME_ROOT):
     app.mount("/frames", StaticFiles(directory=KEYFRAME_ROOT), name="frames")
-    print("Mounted keyframes at /frames →", KEYFRAME_ROOT)
+    print(f"Đã mount thư mục ảnh: {KEYFRAME_ROOT} --> /frames")
 else:
-    raise RuntimeError(f"Keyframe folder not found: {KEYFRAME_ROOT}")
+    print(f"LỖI: Không tìm thấy thư mục ảnh tại {KEYFRAME_ROOT}")
 
 
 # ==================== HELPERS ====================
@@ -55,31 +58,36 @@ def make_json_safe(obj):
 # path trả về từ Milvus luôn dạng L15_V018/1234.jpg
 
 def convert_local_to_url(path: str) -> str:
+    """
+    Chuyển đường dẫn file (tuyệt đối hoặc tương đối) thành URL
+    VD: /home/ir/data/keyframes/L01_V001/1.jpg -> http://.../frames/L01_V001/1.jpg
+    """
     try:
         if not path:
             return None
 
-        # chuẩn hóa
+        # 1. Chuẩn hóa dấu gạch chéo
         p = str(path).replace("\\", "/").strip()
 
-        # nếu là absolute path → rút về relative
-        if ":" in p:
-            rel = os.path.relpath(p, KEYFRAME_ROOT).replace("\\", "/")
+        # 2. Nếu là đường dẫn tuyệt đối (bắt đầu bằng KEYFRAME_ROOT), cắt bỏ phần đầu
+        # Lưu ý: KEYFRAME_ROOT cũng cần chuẩn hóa
+        root_normalized = KEYFRAME_ROOT.replace("\\", "/")
+        
+        if p.startswith(root_normalized):
+            # Cắt bỏ phần gốc, chỉ lấy phần đuôi (VD: L01_V001/1.jpg)
+            rel = p[len(root_normalized):]
+            # Xóa dấu / ở đầu nếu còn dư
+            if rel.startswith("/"):
+                rel = rel[1:]
         else:
+            # Nếu đã là tương đối thì giữ nguyên
             rel = p
 
-        # Build absolute
-        abs_path = os.path.join(KEYFRAME_ROOT, rel)
-        abs_path = os.path.normpath(abs_path)
-
-        if not os.path.exists(abs_path):
-            print("[WARN] not exists:", abs_path)
-            return None
-
+        # 3. Ghép thành URL
         return f"{BASE_URL}/{rel}"
 
     except Exception as e:
-        print("convert_local_to_url ERROR:", e)
+        print(f"convert_local_to_url ERROR: {e}")
         return None
 
 

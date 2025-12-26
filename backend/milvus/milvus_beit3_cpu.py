@@ -1,6 +1,5 @@
 import sys, os, re, time, concurrent.futures
 from functools import lru_cache
-sys.path.append(r"D:\CS336\beit3\unilm\beit3")
 
 import numpy as np
 import torch
@@ -18,6 +17,10 @@ from ocr_csv.ocr_search import search_ocr
 from asr_csv.asr_search import search_asr
 from object_filter import filter_results_by_objects
 
+current_folder = os.path.dirname(os.path.abspath(__file__))
+
+if current_folder not in sys.path:
+    sys.path.append(current_folder)
 
 # ===========================
 # CONSTANT CONFIG
@@ -26,14 +29,14 @@ MILVUS_URI = "https://in03-72ca0c57717b311.serverless.aws-eu-central-1.cloud.zil
 MILVUS_TOKEN = "6e46340b0b47b937701acaf37c4a867542b9140286350efb9459919d0e6da1caa4d0b96db715e1b6a6fc003e1a1520ad9c18c21c"
 COLLECTION_NAME = "video_embeddings_beit3"
 
-MODEL_WEIGHT_PATH = r"D:\AIC2025\beit3\beit3_base_patch16_384_coco_retrieval.pth"
-TOKENIZER_PATH = r"D:\AIC2025\beit3\beit3.spm"
+MODEL_WEIGHT_PATH = r"/home/ir/CS336-Video-Retrieval-System/beit3/beit3_base_patch16_384_coco_retrieval.pth"
+TOKENIZER_PATH = r"/home/ir/CS336-Video-Retrieval-System/beit3/beit3.spm"
 
 MONGO_URI = "mongodb+srv://nguyentheluan27052005vl_db_user:inseclabhelio123@cluster0.jddn1ha.mongodb.net/?retryWrites=true&w=majority"
 DB_NAME = "obj-detection"
 COLLECTION_NAME_OBJ = "object-detection-results"
 
-BASE_DIR = r"D:\CS336\keyframes"
+BASE_DIR = r"/home/ir/data/keyframes"
 
 
 # ===========================
@@ -42,8 +45,7 @@ BASE_DIR = r"D:\CS336\keyframes"
 device = "cpu"
 print("Using device:", device)
 
-from modeling_finetune import beit3_base_patch16_384_retrieval
-
+from .modeling_finetune import beit3_base_patch16_384_retrieval
 
 # ===========================
 # LOAD MODEL ON CPU

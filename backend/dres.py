@@ -6,10 +6,10 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI(title="DRES Submission API")
 
-DRES_BASE = "http://192.168.28.151:5000/api/v2"
-EVALUATION_ID = "1e681cc2-052b-41a2-9897-2ff4194fc77a"
-SESSION_ID = "lks9UycldoCpI-o4P3ei6JI9-222xT0i"
-FPS_CSV_PATH = r"D:\CS336\videos_fps.csv"
+DRES_BASE = "http://192.168.20.156:5601/api/v2"
+EVALUATION_ID = "44457530-7aaa-4186-a4df-bcbaf9908d33"
+SESSION_ID = "CjX3dxtJqSjrc1_jm9jaAAzuQx7tKwyc"
+FPS_CSV_PATH = r"/home/ir/CS336-Video-Retrieval-System/videos_fps.csv"
 
 TEST_MODE = False
 
@@ -98,12 +98,19 @@ async def submit_kis(videos_ID: str = Form(...), frame_start: int = Form(...), f
     }
     url = f"{DRES_BASE}/submit/{EVALUATION_ID}"
     params = {"session": SESSION_ID}
+    
+    print(f"DEBUG SENDING: {body_data}")
+    
     try:
         response = requests.post(url, params=params, json=body_data)
         response.raise_for_status()
         return JSONResponse(content=response.json())
     except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_detail = f"DRES Error: {str(e)}"
+        if 'response' in locals() and response is not None:
+            error_detail += f" | Body: {response.text}"
+             
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @app.post("/api/submit-trake")

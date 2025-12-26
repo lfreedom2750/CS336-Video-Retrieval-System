@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HELIOSEARCH</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <h1>HELIOSEARCH</h1>
+  </nav>
+  <div class="container">
+    <section class="left-panel">
+      <h2>Search Input</h2>
+      <form id="searchForm">
+        <label for="mainQuery">Main Query</label>
+        <input type="text" id="mainQuery" name="query" />
+
+        <label for="nextQueries">Next Queries</label>
+        <textarea id="nextQueries" name="next_q"></textarea>
+
+        <label for="ocrQuery">OCR Query</label>
+        <input type="text" id="ocrQuery" name="ocr_query" />
+    
+        <label for="objectSelect">Object Detection Filters</label>
+<div class="dropdown">
+  <div class="dropdown-selected" id="selectedObjects">Select objects</div>
+  <div class="dropdown-list" id="objectList">
+    <!-- danh sách object sẽ được JS sinh tự động -->
+  </div>
+</div>
+
+<!-- Hidden inputs gửi về backend -->
+<input type="hidden" id="objectFilters" name="objects" value="">
+<input type="hidden" id="requireAll" name="require_all" value="false">
+
+<label for="requireAllCheckbox">
+  <input type="checkbox" id="requireAllCheckbox"> Require all selected objects
+</label>
+
+
+        <label for="audioQuery">Audio Description</label>
+        <input type="text" id="audioQuery" name="audio_query"/>
+
+        <label for="uploadImage"></label>
+        <div class="upload-wrapper">
+          <input type="file" id="uploadImage" name="image" accept=".jpg,.jpeg,.png" />
+          <span id="fileName" class="file-name"></span>
+        </div>
+
+        <button type="submit" id="searchBtn">Search</button>
+      </form>
+    </section>
+
+    <section class="right-panel">
+  <div class="qa-export">
+    <div class="submit-inputs">
+      <input type="text" id="videoIdMain" placeholder="Video ID (e.g. K08_V001)">
+      <input type="number" id="frameIdMain" placeholder="Frame ID">
+      <input type="text" id="qaAnswerMain" placeholder="QA Answer">
+      <input type="text" id="trakeFramesMain" placeholder="Frame IDs (comma-separated)">
+    </div>
+
+    <div class="submit-buttons">
+      <button id="submitKISMain">Submit KIS</button>
+      <button id="submitQAMain">Submit QA</button>
+      <button id="submitTRAKEMain">Submit TRAKE</button>
+    </div>
+  </div>
+
+  <div id="resultsGrid" class="grid"></div>
+</section>
+
+
+
+      <div id="resultsGrid" class="grid"></div>
+    </section>
+  </div>
+
+  <div id="chatbot-button" title="Query Refinement">
+  💬
+</div>
+
+<!-- 🔹 Chatbot Window -->
+<div id="chatbot-window">
+  <div class="chatbot-header">
+    <span>Query Refinement Assistant</span>
+    <button id="chatbot-close">×</button>
+  </div>
+  <div class="chatbot-body" id="chatbot-body">
+    <div class="bot-message">Hello 👋! Please enter your query so I can help you refine it.</div>
+  </div>
+  <div class="chatbot-input">
+    <input type="text" id="chatbot-input-text" placeholder="Nhập truy vấn..." />
+    <button id="chatbot-send">Send</button>
+  </div>
+</div>
+
+  <script src="script.js"></script>
+</body>
+</html>

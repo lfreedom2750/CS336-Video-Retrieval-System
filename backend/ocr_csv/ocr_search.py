@@ -2,9 +2,9 @@ from elasticsearch import Elasticsearch
 import os
 import re
 
-OCR_URL = os.getenv("ELASTIC_URL", "https://ed21305f49e548e6988c39ae2aed69f6.us-central1.gcp.cloud.es.io:443")
-OCR_API_KEY = os.getenv("ELASTIC_API_KEY", "WkkzVEVKb0J2TFBpRXBXM2tOMFo6cmFWTUJ1UUhxYW41RVQtczRLRE1tUQ==")
-INDEX_NAME = os.getenv("OCR_INDEX", "search-2fgl")
+OCR_URL = "https://ocr-e4a8ae.es.us-central1.gcp.elastic.cloud:443"
+OCR_API_KEY = "cEx0Wklwc0Jsc1cwdWJLTk05eXE6OWl3QWhMNVdyaVR0a1ZwMlZOQTN3QQ=="
+INDEX_NAME = "national-parks"
 
 client = Elasticsearch(OCR_URL, api_key=OCR_API_KEY)
 

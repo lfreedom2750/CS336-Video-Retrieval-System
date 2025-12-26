@@ -171,70 +171,244 @@ function renderResults(results) {
       console.log(`🖼 Frame ${r.frame_id} đã được thay bằng: ${file.name}`);
     });
 
-    // 🎯 Click mở context viewer
+    // 🎯 Click vào card: tự điền Video_id, Frame_id + mở context viewer
     card.addEventListener("click", () => {
-    const fp = r.path || r.file_path || r.abs_path;
-    // fp = "L15_V018/12234.jpg"
-    if (!fp) return;
+      const fp = r.path || r.file_path || r.abs_path;
+      // fp = "L15_V018/12234.jpg"
+      if (!fp) return;
+      const parts = fp.split("/");
+      console.log(parts)
+      const videoId = parts[0];                    // L15_V018
+      const frameNum = parts[1].replace(".jpg","");  // 12234
 
-    const parts = fp.split("/");
-    const videoId = parts[0];           // L15_V018
-    const frameNum = parts[1].replace(".jpg","");  // 12234
+      // 🔹 Auto điền vào ô submit chính
+      const videoInputMain = document.getElementById("videoIdMain");
+      const frameInputMain = document.getElementById("frameIdMain");
+      if (videoInputMain) videoInputMain.value = videoId;
+      if (frameInputMain) frameInputMain.value = frameNum;
 
-    const frameId = `${videoId}_${frameNum}`;
-    openContext(frameId);
-  });
+      // 🔹 Vẫn mở context viewer như cũ
+      const frameId = `${videoId}_${frameNum}`;
+      openContext(frameId);
+    });
+
 
     resultsGrid.appendChild(card);
   });
 }
 
 // ==============================
+// 🧩 MỞ CONTEXT VIEWER (5x5 grid) gốc 
+// ==============================
+
+// async function openContext(frameId) {
+//   const modal = document.createElement("div");
+//   modal.className = "modal";
+//   modal.innerHTML = `
+//   <div class="modal-content">
+//     <span class="close-btn">&times;</span>
+//     <h3>Context frames for <b>${frameId}</b></h3>
+
+//     <div class="submit-section">
+//       <h4>Submit to DRES</h4>
+//       <div class="submit-inputs">
+//         <input type="text" id="modalVideoId" placeholder="Video ID (e.g. K08_V001)">
+//         <input type="number" id="modalFrameId" placeholder="Frame ID" value="${frameId}">
+//         <input type="text" id="modalQaAnswer" placeholder="QA Answer">
+//         <input type="text" id="modalTrakeFrames" placeholder="Frame IDs (comma-separated)">
+//       </div>
+//       <div class="submit-buttons">
+//         <button id="modalSubmitKIS">Submit KIS</button>
+//         <button id="modalSubmitQA">Submit QA</button>
+//         <button id="modalSubmitTRAKE">Submit TRAKE</button>
+//       </div>
+//     </div>
+
+//     <div class="context-grid"></div>
+//   </div>
+//   `;
+
+//   document.body.appendChild(modal);
+//   modal.querySelector(".close-btn").onclick = () => modal.remove();
+
+//   const grid = modal.querySelector(".context-grid");
+//   grid.innerHTML = "<p style='color:#ccc;'>Đang tải khung ảnh...</p>";
+
+//   try {
+//     const res = await fetch(`${API_BASE}/api/context/${frameId}`);
+//     const data = await res.json();
+
+//     if (data.status === "ok" && data.neighbors.length) {
+//       grid.innerHTML = "";
+//       const neighbors = data.neighbors;
+//       for (let i = 0; i < 25; i++) {
+//         const n = neighbors[i] || {};
+//         const cell = document.createElement("div");
+//         cell.className = "context-cell";
+
+//         let imgSrc = "static/no_image.png";
+//         if (n.path) {
+//           let p = n.path.replace(/^.*Videos_/, "Videos_");
+//           imgSrc = `${BACKEND_FRAMES}/${p}`;
+//         }
+
+//         cell.innerHTML = `
+//           <img src="${imgSrc}" alt="${n.frame_id || ""}">
+//           <small>${n.frame_id || ""}</small>
+//         `;
+//         if (n.frame_id === frameId) cell.classList.add("current");
+//         grid.appendChild(cell);
+//       }
+//     } else {
+//       grid.innerHTML = "<p style='color:red;'>Không tìm thấy frame lân cận.</p>";
+//     }
+//   } catch (err) {
+//     console.error(err);
+//     grid.innerHTML = `<p style="color:red;">⚠️ ${err}</p>`;
+//   }
+
+//   // ==============================
+//   // 🚀 GỬI DỮ LIỆU DRES TRONG MODAL
+//   // ==============================
+//   const DRES_BASE = `${API_BASE}/dres`;
+
+//   const modalKISBtn = modal.querySelector("#modalSubmitKIS");
+//   const modalQABtn = modal.querySelector("#modalSubmitQA");
+//   const modalTrakeBtn = modal.querySelector("#modalSubmitTRAKE");
+
+//   modalKISBtn.addEventListener("click", async () => {
+//     const video = modal.querySelector("#modalVideoId").value.trim();
+//     const frameStart = modal.querySelector("#modalFrameId").value.trim();
+//     if (!video || !frameStart) return alert("❌ Missing video or frame ID.");
+
+//     const formData = new FormData();
+//     formData.append("videos_ID", video);
+//     formData.append("frame_start", frameStart);
+//     formData.append("frame_end", frameStart);
+
+//     try {
+//       const res = await fetch(`${DRES_BASE}/api/submit-kis`, { method: "POST", body: formData });
+//       const data = await res.json();
+//       alert("✅ KIS submitted: " + JSON.stringify(data));
+//     } catch (err) {
+//       alert("⚠️ Submit KIS failed: " + err);
+//     }
+//   });
+
+//   modalQABtn.addEventListener("click", async () => {
+//     const video = modal.querySelector("#modalVideoId").value.trim();
+//     const frame = modal.querySelector("#modalFrameId").value.trim();
+//     const answer = modal.querySelector("#modalQaAnswer").value.trim();
+//     if (!video || !frame || !answer) return alert("❌ Missing QA fields.");
+
+//     const formData = new FormData();
+//     formData.append("videos_ID", video);
+//     formData.append("frame_index", frame);
+//     formData.append("answer", answer);
+
+//     try {
+//       const res = await fetch(`${DRES_BASE}/api/submit-qa`, { method: "POST", body: formData });
+//       const data = await res.json();
+//       alert("✅ QA submitted: " + JSON.stringify(data));
+//     } catch (err) {
+//       alert("⚠️ Submit QA failed: " + err);
+//     }
+//   });
+
+//   modalTrakeBtn.addEventListener("click", async () => {
+//     const video = modal.querySelector("#modalVideoId").value.trim();
+//     const frames = modal.querySelector("#modalTrakeFrames").value.trim();
+//     if (!video || !frames) return alert("❌ Missing TRAKE fields.");
+
+//     const formData = new FormData();
+//     formData.append("videos_ID", video);
+//     formData.append("frame_ids", frames);
+
+//     try {
+//       const res = await fetch(`${DRES_BASE}/api/submit-trake`, { method: "POST", body: formData });
+//       const data = await res.json();
+//       alert("✅ TRAKE submitted: " + JSON.stringify(data));
+//     } catch (err) {
+//       alert("⚠️ Submit TRAKE failed: " + err);
+//     }
+//   });
+// }
+
+// ==============================
 // 🧩 MỞ CONTEXT VIEWER (5x5 grid)
+// fullKey dạng: L08_V014_11799
 // ==============================
-// ==============================
-// 🧩 MỞ CONTEXT VIEWER (5x5 grid)
-// ==============================
-async function openContext(frameId) {
+
+async function openContext(fullKey) {
+  // Helper: chuẩn hoá số (0331 -> 331)
+  function normalizeNumber(numStr) {
+    const cleaned = String(numStr || "").replace(/^0+/, "");
+    return cleaned === "" ? "0" : cleaned;
+  }
+
+  // Helper: tách videoId + frameId từ fullKey
+  function parseFrameKey(key) {
+    // key dạng L08_V014_11799
+    const parts = (key || "").split("_");
+    if (parts.length < 3) {
+      return { videoId: "", frameId: normalizeNumber(key || "") };
+    }
+    const videoId = parts[0] + "_" + parts[1];         // L08_V014
+    const rawFrame = parts.slice(2).join("_");         // 11799 hoặc 0331
+    const frameId = normalizeNumber(rawFrame);         // chuẩn hoá
+    return { videoId, frameId };
+  }
+
+  // Tạo modal
   const modal = document.createElement("div");
   modal.className = "modal";
   modal.innerHTML = `
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <h3>Context frames for <b>${frameId}</b></h3>
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h3>Context frames for <b>${fullKey}</b></h3>
 
-    <div class="submit-section">
-      <h4>Submit to DRES</h4>
-      <div class="submit-inputs">
-        <input type="text" id="modalVideoId" placeholder="Video ID (e.g. K08_V001)">
-        <input type="number" id="modalFrameId" placeholder="Frame ID" value="${frameId}">
-        <input type="text" id="modalQaAnswer" placeholder="QA Answer">
-        <input type="text" id="modalTrakeFrames" placeholder="Frame IDs (comma-separated)">
+      <div class="submit-section">
+        <h4>Submit to DRES</h4>
+        <div class="submit-inputs">
+          <input type="text" id="modalVideoId" placeholder="Video ID (e.g. L08_V014)">
+          <input type="number" id="modalFrameId" placeholder="Frame ID">
+          <input type="text" id="modalQaAnswer" placeholder="QA Answer">
+          <input type="text" id="modalTrakeFrames" placeholder="Frame IDs (comma-separated)">
+        </div>
+        <div class="submit-buttons">
+          <button id="modalSubmitKIS">Submit KIS</button>
+          <button id="modalSubmitQA">Submit QA</button>
+          <button id="modalSubmitTRAKE">Submit TRAKE</button>
+        </div>
       </div>
-      <div class="submit-buttons">
-        <button id="modalSubmitKIS">Submit KIS</button>
-        <button id="modalSubmitQA">Submit QA</button>
-        <button id="modalSubmitTRAKE">Submit TRAKE</button>
-      </div>
+
+      <div class="context-grid"></div>
     </div>
-
-    <div class="context-grid"></div>
-  </div>
   `;
 
   document.body.appendChild(modal);
   modal.querySelector(".close-btn").onclick = () => modal.remove();
 
   const grid = modal.querySelector(".context-grid");
+  const modalVideoInput = modal.querySelector("#modalVideoId");
+  const modalFrameInput = modal.querySelector("#modalFrameId");
+
+  // Prefill từ fullKey: L08_V014_11799
+  const { videoId: initialVideo, frameId: initialFrame } = parseFrameKey(fullKey);
+  if (modalVideoInput) modalVideoInput.value = initialVideo;
+  if (modalFrameInput) modalFrameInput.value = initialFrame;
+
   grid.innerHTML = "<p style='color:#ccc;'>Đang tải khung ảnh...</p>";
 
   try {
-    const res = await fetch(`${API_BASE}/api/context/${frameId}`);
+    // API context nhận fullKey dạng: L08_V014_11799
+    const res = await fetch(`${API_BASE}/api/context/${fullKey}`);
     const data = await res.json();
 
     if (data.status === "ok" && data.neighbors.length) {
       grid.innerHTML = "";
       const neighbors = data.neighbors;
+
       for (let i = 0; i < 25; i++) {
         const n = neighbors[i] || {};
         const cell = document.createElement("div");
@@ -246,11 +420,47 @@ async function openContext(frameId) {
           imgSrc = `${BACKEND_FRAMES}/${p}`;
         }
 
+        // fullKeyNeighbor ưu tiên n.frame_id (L08_V014_11799)
+        let fullKeyNeighbor = n.frame_id;
+        if (!fullKeyNeighbor && n.path) {
+          // fallback từ path: L08_V014/11799.jpg -> L08_V014_11799
+          const parts = n.path.split("/");
+          const v = parts[0];
+          const f = (parts[1] || "").replace(".jpg", "");
+          fullKeyNeighbor = `${v}_${f}`;
+        }
+
+        const { videoId: neighborVideo, frameId: neighborFrame } =
+          parseFrameKey(fullKeyNeighbor || "");
+
         cell.innerHTML = `
-          <img src="${imgSrc}" alt="${n.frame_id || ""}">
-          <small>${n.frame_id || ""}</small>
+          <img src="${imgSrc}" alt="${fullKeyNeighbor || ""}">
+          <small>${fullKeyNeighbor || ""}</small>
         `;
-        if (n.frame_id === frameId) cell.classList.add("current");
+
+        if (fullKeyNeighbor === fullKey) cell.classList.add("current");
+
+        // 👉 CLICK VÀO FRAME TRONG CONTEXT
+        cell.addEventListener("click", () => {
+          if (!fullKeyNeighbor) return;
+
+          // Gán vào input trong modal
+          if (modalVideoInput) modalVideoInput.value = neighborVideo;
+          if (modalFrameInput) modalFrameInput.value = neighborFrame;
+
+          // Đồng bộ luôn ra main form bên ngoài
+          const videoMain = document.getElementById("videoIdMain");
+          const frameMain = document.getElementById("frameIdMain");
+          if (videoMain) videoMain.value = neighborVideo;
+          if (frameMain) frameMain.value = neighborFrame;
+
+          // Highlight cell đang chọn
+          grid.querySelectorAll(".context-cell").forEach(c =>
+            c.classList.remove("current")
+          );
+          cell.classList.add("current");
+        });
+
         grid.appendChild(cell);
       }
     } else {
@@ -279,9 +489,12 @@ async function openContext(frameId) {
     formData.append("videos_ID", video);
     formData.append("frame_start", frameStart);
     formData.append("frame_end", frameStart);
-
+    console.log(formData.get("videos_ID"), formData.get("frame_start"));
     try {
-      const res = await fetch(`${DRES_BASE}/api/submit-kis`, { method: "POST", body: formData });
+      const res = await fetch(`${DRES_BASE}/api/submit-kis`, {
+        method: "POST",
+        body: formData
+      });
       const data = await res.json();
       alert("✅ KIS submitted: " + JSON.stringify(data));
     } catch (err) {
@@ -301,7 +514,10 @@ async function openContext(frameId) {
     formData.append("answer", answer);
 
     try {
-      const res = await fetch(`${DRES_BASE}/api/submit-qa`, { method: "POST", body: formData });
+      const res = await fetch(`${DRES_BASE}/api/submit-qa`, {
+        method: "POST",
+        body: formData
+      });
       const data = await res.json();
       alert("✅ QA submitted: " + JSON.stringify(data));
     } catch (err) {
@@ -319,7 +535,10 @@ async function openContext(frameId) {
     formData.append("frame_ids", frames);
 
     try {
-      const res = await fetch(`${DRES_BASE}/api/submit-trake`, { method: "POST", body: formData });
+      const res = await fetch(`${DRES_BASE}/api/submit-trake`, {
+        method: "POST",
+        body: formData
+      });
       const data = await res.json();
       alert("✅ TRAKE submitted: " + JSON.stringify(data));
     } catch (err) {
@@ -327,6 +546,8 @@ async function openContext(frameId) {
     }
   });
 }
+
+
 
 // ==============================
 // 🧩 DROPDOWN OBJECT FILTERS
